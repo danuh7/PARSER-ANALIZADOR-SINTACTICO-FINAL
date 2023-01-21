@@ -1,0 +1,63 @@
+alpha = { 'a'..'z' | 'A'..'Z' }
+digit = { '0'..'9' }
+underscore = { "_" }
+newline = _{ "\n" | "\r" }
+WHITESPACE = _{ " " }
+STRING = {^[a-zA-Z][a-zA-Z0-9_]*}
+
+
+declaration = { "var" ~ !newline ~ idents ~ newline? ~ ";" }
+idents = { ident ~ (newline? ~ "," ~ ident)* }
+ident = @{ !digit ~ (alpha | digit | underscore)+ }
+
+Program = {Typeld Decl | "void" ~ ident ~ Funcs}
+Typeld = {TypeSpec ~ ident}
+Decl = {Vars | Funcs}
+TypeSpec = {"int", "char", "bool", "float"}
+Vars = {ArrayDecl ~ VarDeclInit ~ DecList ~ ";" ~ Decl2 }
+ArrayDecl = [ digit ] | WHITESPACE
+VarDeclInit = { "=" ~ Expresion | WHITESPACE}
+DecList = {"," ~ VarNames | WHITESPACE}
+VarNames = {ident ~ ArrayDecl ~ VarDeclInit ~ DecList}
+Decl2 = { TypeId  ~ Decl | "void"  ~ ident  ~ Funcs}
+Funcs = { ( Params ) ~ stmt ~ FunDecListp }
+FunDecListp = { FunDecList ~ FunDecListp | Ɛ}
+FunDecList = { (TypeSpec | "void")  ~ ident  ~ ( params )  ~ FuncStmt}
+
+Params = { Param ~ Paramsp | WHITESPACE }
+Paramsp = { "," ~ Param Paramsp | WHITESPACE}
+Param ={ TypeSpec ~ ident }
+FuncStmt = { Stmts ~ ReturnStmt }
+ReturnStmt ={ return ";" | return Expresion ";" | WHITESPACE}
+Stmts = {Stmt ~ Stmts | WHITESPACE}
+Stmt = { ExprStmt | IfStmt | WhileStmt | ForStmt}
+ExprStmt = { Expresion ";"}
+Expresion = {Assignement}
+Assignement ={ ident = Assignement | LogicOr}
+LogicOr ={LogicAnd ~ LogicOrp}
+LogicOrp ={ "||" ~ LogicAnd ~ LogicOrp | WHITESPACE}
+LogicAnd ={Equality ~ LogicAndp}
+LogicAndp ={"&&" ~ Equality ~ LogicAndp | WHITESPACE}
+Equality ={Comparison ~ Equalityp }
+Equalityp ={CompOper ~ Comparison ~ Equalityp | WHITESPACE}
+CompOper ={"¡" "=" | "=="}
+Comparison ={Term ~ Comparisonp}
+Comparisonp ={ LogicOperator ~ Term ~ Comparisonp | WHITESPACE}
+LogicOperator ={ ">" | ">=" | "<" | "<="}
+Term ={Factor ~ Termp}
+Termp ={ "-" Factor ~ Termp | "+" ~ Factor ~ Termp | WHITESPACE}
+Factor ={Unary ~ Factorp}
+Factor’ ={ "/" ~ Unary ~ Factorp| "*" ~ Unary ~ Factorp| WHITESPACE}
+Unary ={UnaryOp ~ Unary | Call}
+UnaryOp ={ "!"| "-"}
+Call ={Primary ~ CallFunc}
+CallFunc ={ ( Params ) | WHITESPACE}
+Primary ={ "true" | "false"| digit | STRING | ident | ( Expresion )}
+IfStmt ={If ~ ( Expresion ) ~ { Stmts } ~ ElseStmt}
+ElseStmt ={ else ~ { Stmts } | WHITESPACE}
+
+WhileStmt ={ while ( Expresion ) { Stmts }}
+ForStmt ={ for (ForExpr ; ForExpr ; ForExpr ) { Stmts }}
+ForExpr ={ Expresion | WHITESPACE}
+
+
